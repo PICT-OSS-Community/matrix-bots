@@ -39,34 +39,33 @@ async def main():
 
         try:
             github_username = messages.chunk[0].body
-            print(github_username)
-            # Ignore predefined messages to prevent recursion
-            if github_username == IGNORED_MESSAGES:
-                print("Error last")
-                return
+            # Only making requests to github if input adheres to a format to prevent recursion through predefined messages
+            if github_username[:5] == "user:":
+                github_username = github_username[5:]
+                print(github_username)
 
-            try:
-                # Add user to GitHub organization
-                user = github_client.get_user(github_username)
-                organization.add_to_members(user)
-                await matrix_client.room_send(
-                    room_id=MATRIX_CHANNEL_ID,
-                    message_type="m.room.message",
-                    content={
-                        "msgtype": "m.text",
-                        "body": f"Successfully added @{github_username} to the GitHub organization!",
-                    },
-                )
-            except Exception as e:
-                # print(f"Failed to add @{github_username}: {str(e)}")
-                await matrix_client.room_send(
-                    room_id=MATRIX_CHANNEL_ID,
-                    message_type="m.room.message",
-                    content={
-                        "msgtype": "m.text",
-                        "body": "Failed to process the request. Please check the username and try again.",
-                    },
-                )
+                try:
+                    # Add user to GitHub organization
+                    user = github_client.get_user(github_username)
+                    organization.add_to_members(user)
+                    await matrix_client.room_send(
+                        room_id=MATRIX_CHANNEL_ID,
+                        message_type="m.room.message",
+                        content={
+                            "msgtype": "m.text",
+                            "body": f"Successfully invited @{github_username} to the GitHub organization!",
+                        },
+                    )
+                except Exception as e:
+                    print(f"Failed to add @{github_username}: {str(e)}")
+                    await matrix_client.room_send(
+                        room_id=MATRIX_CHANNEL_ID,
+                        message_type="m.room.message",
+                        content={
+                            "msgtype": "m.text",
+                            "body": "Failed to process the request. Please check the username and try again.",
+                        },
+                    )
 
         except Exception as e:
             print(e)
