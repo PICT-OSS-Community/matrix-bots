@@ -3,6 +3,7 @@ from nio import AsyncClient, MatrixRoom, RoomMessageText
 from github import Github
 from dotenv import load_dotenv
 import os
+import json
 
 # Load environment variables
 load_dotenv()
@@ -12,11 +13,6 @@ MATRIX_PASSWORD = os.getenv("MATRIX_PASSWORD")
 MATRIX_CHANNEL_ID = os.getenv("MATRIX_CHANNEL_ID")
 GITHUB_PERSONAL_ACCESS_TOKEN = os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")
 GITHUB_ORGANIZATION_NAME = os.getenv("GITHUB_ORGANIZATION_NAME")
-
-IGNORED_MESSAGES = (
-    "Failed to process the request. Please check the username and try again."
-)
-
 
 async def main():
     # Initialize Matrix client
@@ -34,7 +30,6 @@ async def main():
 
         # Extract the latest message
         if not messages.chunk:
-
             return
 
         try:
@@ -42,8 +37,6 @@ async def main():
             # Only making requests to github if input adheres to a format to prevent recursion through predefined messages
             if github_username[:5] == "user:":
                 github_username = github_username[5:]
-                print(github_username)
-
                 try:
                     # Add user to GitHub organization
                     user = github_client.get_user(github_username)
@@ -56,14 +49,16 @@ async def main():
                             "body": f"Successfully invited @{github_username} to the GitHub organization!",
                         },
                     )
+                    print(f"Successfully invited @{github_username} to the GitHub organization!")
                 except Exception as e:
-                    print(f"Failed to add @{github_username}: {str(e)}")
+                    errorObj = json.loads(str(e)[4:])
+                    print(f"Failed to add @{github_username}! Error: {errorObj['status']} {errorObj['message']}")
                     await matrix_client.room_send(
                         room_id=MATRIX_CHANNEL_ID,
                         message_type="m.room.message",
                         content={
                             "msgtype": "m.text",
-                            "body": "Failed to process the request. Please check the username and try again.",
+                            "body": f"Failed to add @{github_username}\nCode: {errorObj['status']}\nMessage: {errorObj['message']}",
                         },
                     )
 
