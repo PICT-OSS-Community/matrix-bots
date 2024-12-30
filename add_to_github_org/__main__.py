@@ -34,6 +34,10 @@ async def main():
             MATRIX_CHANNEL_ID, limit=1
         )
 
+        # Doesn't allow other events (like RoomMemberEvent) to pass through
+        if not isinstance(messages.chunk[0], RoomMessageText):
+            return
+
         try:
             github_username = messages.chunk[0].body
             # Only making requests to github if input adheres to a format to prevent recursion through predefined messages
