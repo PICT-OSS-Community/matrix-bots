@@ -4,6 +4,11 @@ from github import Github
 from dotenv import load_dotenv
 import os
 import json
+from flask import Flask
+
+# Flask constructor takes the name of 
+# current module (__name__) as argument.
+app = Flask(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +21,11 @@ GITHUB_ORGANIZATION_NAME = os.getenv("GITHUB_ORGANIZATION_NAME")
 
 # To store initial list of joined people in room
 joined = []
+
+@app.route('/')
+# ‘/’ URL is bound with hello_world() function.
+def hello_world():
+    return 'Hello World'
 
 async def main():
     global joined
@@ -107,4 +117,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    app.run(port=8000)
     asyncio.run(main())

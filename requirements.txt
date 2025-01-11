@@ -35,3 +35,4 @@ unpaddedbase64==2.1.0
 urllib3==2.2.3
 wrapt==1.17.0
 yarl==1.18.3
+flask
