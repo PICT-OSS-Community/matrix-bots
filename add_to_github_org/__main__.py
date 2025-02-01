@@ -100,19 +100,24 @@ async def main():
         if joined != currentlyJoined:
             # If someone leaves/joins, update the joined members list
             # Not currently handling the membership values "invite", "ban" and "knock"
-            if event.membership == "leave":
-                joined = currentlyJoined
-                print(f"{event.sender} left the room!")
-            elif event.membership == "join":
-                joined = currentlyJoined
-                print(f"{event.sender} joined the room!")
-                await matrix_client.room_send(
-                    room_id=MATRIX_CHANNEL_ID,
-                    message_type="m.room.message",
-                    content={
-                        "msgtype": "m.text",
-                        "body": f"Welcome to the room {event.sender}!\nTo invite yourself to the organization, send the command as user:{{username}}\nExample: user:yokelman"
-                    }
+            if event.membership == "join":
+            # Update the joined list
+            joined = currentlyJoined
+            print(f"{event.sender} joined the room!")
+
+            # Send a welcome message
+            await matrix_client.room_send(
+                room_id=MATRIX_CHANNEL_ID,
+                message_type="m.room.message",
+                content={
+                    "msgtype": "m.text",
+                    "body": f"Welcome to the room {event.sender}!\nTo invite yourself to the organization, send the command as user:{{username}}\nExample: user:yokelman"
+                }
+            )
+        elif event.membership == "leave":
+            # Update the joined list
+            joined = currentlyJoined
+            print(f"{event.sender} left the room!")
                 )
 
     # Register callbacks for new messages and new joins
