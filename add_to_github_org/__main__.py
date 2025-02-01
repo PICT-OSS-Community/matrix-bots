@@ -38,8 +38,8 @@ async def main():
     # Initialize Matrix client
     matrix_client = AsyncClient(MATRIX_HOMESERVER, MATRIX_USERNAME)
     await matrix_client.login(MATRIX_PASSWORD)
-    joined = (await matrix_client.joined_members(MATRIX_CHANNEL_ID)).members
-
+    # changed to a set to remove order issues (if any) and only contains username of members
+    joined = set([member.user_id for member in (await matrix_client.joined_members(MATRIX_CHANNEL_ID)).members])
     # Initialize GitHub client
     github_client = Github(GITHUB_PERSONAL_ACCESS_TOKEN)
     organization = github_client.get_organization(GITHUB_ORGANIZATION_NAME)
@@ -96,7 +96,7 @@ async def main():
         if room.room_id != MATRIX_CHANNEL_ID:
             return
 
-        currentlyJoined = (await matrix_client.joined_members(MATRIX_CHANNEL_ID)).members
+        currentlyJoined = set([member.user_id for member in (await matrix_client.joined_members(MATRIX_CHANNEL_ID)).members])
         if joined != currentlyJoined:
             # If someone leaves/joins, update the joined members list
             # Not currently handling the membership values "invite", "ban" and "knock"
